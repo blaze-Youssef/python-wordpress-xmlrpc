@@ -1,8 +1,13 @@
 import collections
 import sys
 
-from wordpress_xmlrpc.compat import xmlrpc_client, dict_type
-from wordpress_xmlrpc.exceptions import ServerConnectionError, UnsupportedXmlrpcMethodError, InvalidCredentialsError, XmlrpcDisabledError
+from wordpress_xmlrpc.compat import dict_type, xmlrpc_client
+from wordpress_xmlrpc.exceptions import (
+    InvalidCredentialsError,
+    ServerConnectionError,
+    UnsupportedXmlrpcMethodError,
+    XmlrpcDisabledError,
+)
 
 
 class Client(object):
@@ -13,15 +18,18 @@ class Client(object):
     `XmlrpcMethod`-derived class to `Client`'s `call` method.
     """
 
-    def __init__(self, url, username, password, blog_id=0, transport=None, verbose=False):
+    def __init__(
+        self, url, username, password, blog_id=0, transport=None, verbose=False
+    ):
         self.url = url
         self.username = username
         self.password = password
         self.blog_id = blog_id
 
         try:
-            self.server = xmlrpc_client.ServerProxy(url, allow_none=True, transport=transport,
-		verbose=verbose)
+            self.server = xmlrpc_client.ServerProxy(
+                url, allow_none=True, transport=transport, verbose=verbose
+            )
             self.supported_methods = self.server.mt.supportedMethods()
         except xmlrpc_client.ProtocolError:
             e = sys.exc_info()[1]
@@ -59,6 +67,7 @@ class XmlrpcMethod(object):
         * `optional_args`: Tuple of method-specific optional parameters
         * `results_class`: Python class which will convert an XML-RPC response dict into an object
     """
+
     method_name = None
     method_args = tuple()
     optional_args = tuple()
@@ -69,22 +78,28 @@ class XmlrpcMethod(object):
             if self.optional_args:
                 max_num_args = len(self.method_args) + len(self.optional_args)
                 if not (len(self.method_args) <= len(args) <= max_num_args):
-                    raise ValueError("Invalid number of parameters to %s" % self.method_name)
+                    raise ValueError(
+                        "Invalid number of parameters to %s" % self.method_name
+                    )
             else:
                 if len(args) != len(self.method_args):
-                    raise ValueError("Invalid number of parameters to %s" % self.method_name)
+                    raise ValueError(
+                        "Invalid number of parameters to %s" % self.method_name
+                    )
 
             for i, arg_name in enumerate(self.method_args):
                 setattr(self, arg_name, args[i])
 
             if self.optional_args:
-                for i, arg_name in enumerate(self.optional_args, start=len(self.method_args)):
+                for i, arg_name in enumerate(
+                    self.optional_args, start=len(self.method_args)
+                ):
                     if i >= len(args):
                         break
                     setattr(self, arg_name, args[i])
 
-        if 'results_class' in kwargs:
-            self.results_class = kwargs['results_class']
+        if "results_class" in kwargs:
+            self.results_class = kwargs["results_class"]
 
     def default_args(self, client):
         """
@@ -101,12 +116,12 @@ class XmlrpcMethod(object):
         default_args = self.default_args(client)
 
         if self.method_args or self.optional_args:
-            optional_args = getattr(self, 'optional_args', tuple())
+            optional_args = getattr(self, "optional_args", tuple())
             args = []
-            for arg in (self.method_args + optional_args):
+            for arg in self.method_args + optional_args:
                 if hasattr(self, arg):
                     obj = getattr(self, arg)
-                    if hasattr(obj, 'struct'):
+                    if hasattr(obj, "struct"):
                         args.append(obj.struct)
                     else:
                         args.append(obj)
@@ -126,7 +141,7 @@ class XmlrpcMethod(object):
         if self.results_class and raw_result:
             if isinstance(raw_result, dict_type):
                 return self.results_class(raw_result)
-            elif isinstance(raw_result, collections.Iterable):
+            elif isinstance(raw_result, collections.abc.Iterable):
                 return [self.results_class(result) for result in raw_result]
 
         return raw_result
@@ -136,6 +151,7 @@ class AnonymousMethod(XmlrpcMethod):
     """
     An XML-RPC method for which no authentication is required.
     """
+
     pass
 
 
