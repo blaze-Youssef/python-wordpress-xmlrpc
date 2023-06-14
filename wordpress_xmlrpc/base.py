@@ -19,7 +19,14 @@ class Client(object):
     """
 
     def __init__(
-        self, url, username, password, blog_id=0, transport=None, verbose=False
+        self,
+        url,
+        username,
+        password,
+        blog_id=0,
+        transport=None,
+        verbose=False,
+        sslcontext=None,
     ):
         self.url = url
         self.username = username
@@ -28,7 +35,11 @@ class Client(object):
 
         try:
             self.server = xmlrpc_client.ServerProxy(
-                url, allow_none=True, transport=transport, verbose=verbose
+                url,
+                allow_none=True,
+                transport=transport,
+                verbose=verbose,
+                context=sslcontext,
             )
             self.supported_methods = self.server.mt.supportedMethods()
         except xmlrpc_client.ProtocolError:
