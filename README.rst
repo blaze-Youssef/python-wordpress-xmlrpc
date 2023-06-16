@@ -1,3 +1,5 @@
+**UDPDATED Verison:** I updated some functions that I needed to be run with python 3.11.
+
 .. image:: https://travis-ci.org/maxcutler/python-wordpress-xmlrpc.svg?branch=master
     :target: https://travis-ci.org/maxcutler/python-wordpress-xmlrpc
 
